@@ -1,0 +1,75 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--
+This file is used by the publish/package process of your Web project. You can customize the behavior of this process
+by editing this MSBuild file. In order to learn more about this please visit http://go.microsoft.com/fwlink/?LinkID=208121. 
+-->
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <ItemGroup>
+    <PublishOptions Include="wwwroot" />
+    <PublishOptions Include="Views" />
+    <PublishOptions Include="Areas/**/Views" />
+    <PublishOptions Include="appsettings*.json" />
+    <PublishOptions Include="web*.config" Exclude="Properties/PublishProfile/**" />
+  </ItemGroup>
+  
+  <PropertyGroup>
+    <PrePublishProject>
+      echo "Pre-publish command from pubproj"
+    </PrePublishProject>
+    <PostPublishProject>
+      echo "Post-publish command from pubproj"
+    </PostPublishProject>
+    <DefaultProfile Condition="'$(UseDefaultProfile)' == 'true'">FileSystem.pubxml</DefaultProfile>
+  </PropertyGroup>
+
+  <Import Project="$(DefaultProfile)" Condition="Exists($(DefaultProfile))"/>
+
+  <Target Name="CreatePublishOutputDirectory" >
+    <PropertyGroup>
+      <PublishOutputPath>$(OutDir)\$(Configuration)\PublishOutput</PublishOutputPath>
+    </PropertyGroup>
+    <MakeDir
+    Directories="$(PublishOutputPath)"/>
+  </Target>
+  
+  <PropertyGroup>
+    <PrePublishDependsOn>
+      $(PrePublishDependsOn);
+      Build;
+      CreatePublishOutputDirectory
+    </PrePublishDependsOn>
+  </PropertyGroup>
+  
+  <Target Name="PrePublishProject" DependsOnTargets="$(PrePublishDependsOn)">
+    <Message Importance="high" Text="Entering PrePublishProject task in pubproj" />
+    <Exec WorkingDirectory="$(MSBuildProjectDirectory)" Condition="$(PrePublishProject) != ''" Command="$(PrePublishProject)" />
+    <Exec WorkingDirectory="$(MSBuildProjectDirectory)" Condition="$(PrePublishProfile) != ''" Command="$(PrePublishProfile)" />
+    <Message Importance="high" Text="Leaving PrePublishProject task in pubproj" />
+  </Target>
+
+  <PropertyGroup>
+    <CorePublishDependsOn>
+      $(CorePublishDependsOn);
+      PrePublishProject
+    </CorePublishDependsOn>
+  </PropertyGroup>
+  <Target Name="CorePublish" DependsOnTargets="$(CorePublishDependsOn)" >
+    <Message Importance="high" Text="Entering CorePublish task in pubproj" />
+    <Message Importance="high" Text="Executing Core Publish" />
+    <Message Importance="high" Text="Leaving CorePublish task in pubproj" />
+  </Target>
+
+  <PropertyGroup>
+    <PostPublishDependsOn>
+      $(PostPublishDependsOn);
+      CorePublish
+    </PostPublishDependsOn>
+  </PropertyGroup>
+  <Target Name="PostPublishProject" DependsOnTargets="$(PostPublishDependsOn)" AfterTargets="Build"  Condition="'$(publishOnBuild)' == 'true'">
+    <Message Importance="high" Text="Entering Post Publish task in pubproj" />
+    <Exec WorkingDirectory="$(MSBuildProjectDirectory)" Condition="$(PostPublishProfile) != ''" Command="$(PostPublishProfile)" />
+    <Exec WorkingDirectory="$(MSBuildProjectDirectory)" Condition="$(PostPublishProject) != ''" Command="$(PostPublishProject)" />
+    <Message Importance="high" Text="Leaving Post Publish task in pubproj" />
+  </Target>
+</Project>
